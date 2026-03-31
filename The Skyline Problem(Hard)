@@ -1,0 +1,41 @@
+class Solution {
+public:
+    vector<vector<int>> getSkyline(vector<vector<int>>& buildings) {
+        // 1. Convert buildings into events: (x, height)
+        // Use negative height for start points to differentiate from end points
+        // and to handle sorting (higher buildings first at same start point)
+        vector<pair<int, int>> events;
+        for (auto& b : buildings) {
+            events.push_back({b[0], -b[2]}); // Start of building
+            events.push_back({b[1], b[2]});  // End of building
+        }
+
+        // 2. Sort events by x-coordinate
+        sort(events.begin(), events.end());
+
+        // 3. Max-heap to track current active heights
+        multiset<int> heights = {0}; 
+        vector<vector<int>> res;
+        int prevMaxHeight = 0;
+
+        for (auto& event : events) {
+            int x = event.first;
+            int h = event.second;
+
+            if (h < 0) {
+                heights.insert(-h); // Add building height
+            } else {
+                heights.erase(heights.find(h)); // Remove building height
+            }
+
+            int currentMaxHeight = *heights.rbegin();
+            // 4. If max height changes, we found a key point
+            if (currentMaxHeight != prevMaxHeight) {
+                res.push_back({x, currentMaxHeight});
+                prevMaxHeight = currentMaxHeight;
+            }
+        }
+
+        return res;
+    }
+};
